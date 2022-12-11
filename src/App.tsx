@@ -1,25 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from "react";
+import useWebsocket from "react-use-websocket";
+import { TextField, Button, Chip } from "@mui/material";
 
 function App() {
+  const [chat, setChat] = useState<string[]>([]);
+  const [message, setMessage] = useState<string>();
+  const { sendMessage, lastMessage } = useWebsocket("ws://localhost:3000");
+
+  useEffect(() => {
+    if (lastMessage !== null) {
+      setChat((prev) => prev.concat(lastMessage.data as string));
+    }
+  }, [setChat, lastMessage]);
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <TextField
+        id="filled-basic"
+        label="Filled"
+        variant="filled"
+        value={message}
+        onChange={(ev) => {
+          setMessage(ev.target.value);
+        }}
+      />
+
+      <Button
+        onClick={() => {
+          sendMessage(message || "");
+          setMessage("");
+        }}
+      >
+        Submit
+      </Button>
+
+      <br />
+      <br />
+      {chat.map((message) => (
+        <Chip label={message} />
+      ))}
+    </>
   );
 }
 
